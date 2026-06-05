@@ -2,11 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Nav from "./Nav";
 
-// Mock Next.js Link
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: React.ReactNode }) => (
     <a href={href}>{children}</a>
   ),
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
 }));
 
 describe("Nav", () => {
