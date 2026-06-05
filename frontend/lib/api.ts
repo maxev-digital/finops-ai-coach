@@ -5,7 +5,9 @@
  * Local dev: NEXT_PUBLIC_API_URL=http://localhost:8000
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || "";
+// On VPS: NEXT_PUBLIC_API_URL is unset, nginx proxies /api/* to FastAPI port 8002
+// Local dev: NEXT_PUBLIC_API_URL=http://localhost:8000
+const BASE = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
