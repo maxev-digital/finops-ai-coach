@@ -30,6 +30,7 @@ const FOOTER_LINKS = [
   { href: "/demo", label: "AI Coach" },
   { href: "/prompt-lab", label: "Prompt Lab" },
   { href: "/insights", label: "HR Insights" },
+  { href: "/architecture", label: "Architecture" },
 ];
 
 export default function RootLayout({
