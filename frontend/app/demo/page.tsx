@@ -56,7 +56,7 @@ export default function DemoPage() {
         content: res.response,
         sources: res.sources,
       }]);
-    } catch (e) {
+    } catch {
       setError("Failed to get a response. Please try again.");
     } finally {
       setLoading(false);
