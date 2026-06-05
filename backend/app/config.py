@@ -35,4 +35,4 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # pydantic-settings loads from env, not constructor args
