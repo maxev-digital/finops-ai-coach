@@ -36,7 +36,7 @@ async def chat(req: ChatRequest, db: AsyncSession = Depends(get_db)):
 
     # RAG + generation
     try:
-        result = await get_rag_response(db, req.user_id, req.message, req.prompt_version)
+        rag = await get_rag_response(db, req.user_id, req.message, req.prompt_version)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -44,16 +44,16 @@ async def chat(req: ChatRequest, db: AsyncSession = Depends(get_db)):
     db.add(Message(
         conversation_id=conv.id,
         role="assistant",
-        content=result["response"],
-        retrieved_sources=[c.document_name for c in result["sources"]],
+        content=rag["response"],
+        retrieved_sources=[c.document_name for c in rag["sources"]],
         prompt_version=req.prompt_version,
     ))
     await db.commit()
 
     return ChatResponse(
-        response=result["response"],
+        response=rag["response"],
         conversation_id=conv.id,
-        sources=result["sources"],
+        sources=rag["sources"],
     )
 
 
