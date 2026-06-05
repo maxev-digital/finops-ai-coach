@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  Brain, ShieldCheck, Users, TrendingUp,
+  Brain, ShieldCheck, TrendingUp,
   ArrowRight, CheckCircle, BarChart3, Zap,
   MessageSquare, Database, Sparkles, Quote,
   Target, DollarSign, Lightbulb,
