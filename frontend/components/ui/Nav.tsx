@@ -21,10 +21,13 @@ export default function Nav() {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 font-semibold text-white">
-          <div className="w-8 h-8 bg-gold-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gold-500 rounded-lg flex items-center justify-center shrink-0">
             <Brain size={18} className="text-navy-900" />
           </div>
-          <span>FinCoach <span className="text-gold-400">AI</span></span>
+          <div className="flex flex-col leading-none">
+            <span>FinCoach <span className="text-gold-400">AI</span></span>
+            <span className="text-[9px] text-white/30 font-normal mt-0.5 tracking-wide">by Max EV Digital</span>
+          </div>
         </Link>
 
         {/* Desktop nav */}

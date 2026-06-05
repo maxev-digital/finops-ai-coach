@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "@/components/ui/Nav";
 import Link from "next/link";
-import { Brain, Github, ExternalLink } from "lucide-react";
+import { Brain, Github, ExternalLink, Zap } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "FinCoach AI — Financial Wellness Coach",
@@ -41,6 +41,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        {/* Max EV Digital brand bar */}
+        <div className="bg-slate-950 border-b border-white/5 py-2">
+          <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1 bg-gold-500/15 border border-gold-500/25 rounded px-2 py-0.5">
+                <Zap size={9} className="text-gold-400" />
+                <span className="text-[10px] font-bold text-gold-400 tracking-wider uppercase">Max EV Digital</span>
+              </div>
+              <span className="text-[10px] text-white/30 hidden sm:inline">
+                AI systems for enterprise verticals · This is a live architecture demo
+              </span>
+            </div>
+            <a
+              href="https://admin.maxevdigital.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-white/25 hover:text-gold-400 transition-colors font-medium"
+            >
+              maxevdigital.com →
+            </a>
+          </div>
+        </div>
         <Nav />
         <main>{children}</main>
 
@@ -118,9 +140,17 @@ export default function RootLayout({
                 FinCoach AI provides general financial wellness education only — not personalized financial,
                 tax, or investment advice. Consult a licensed financial advisor for decisions specific to your situation.
               </p>
-              <p className="text-xs text-white/20 shrink-0">
-                Demo by Max EV Digital
-              </p>
+              <a
+                href="https://admin.maxevdigital.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-white/30 hover:text-gold-400 transition-colors shrink-0 font-medium"
+              >
+                <div className="w-4 h-4 bg-gold-500/20 rounded flex items-center justify-center">
+                  <Zap size={8} className="text-gold-400" />
+                </div>
+                Built by Max EV Digital
+              </a>
             </div>
           </div>
         </footer>

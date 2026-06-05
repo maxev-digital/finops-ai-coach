@@ -4,6 +4,7 @@ import {
   ArrowRight, CheckCircle, BarChart3, Zap,
   MessageSquare, Database, Sparkles, Quote,
   Target, DollarSign, Lightbulb,
+  Heart, Scale, Home, Headphones, BookOpen, Users, FileText, Layers,
 } from "lucide-react";
 
 /* ─── Data ─────────────────────────────────────────────────────────────────── */
@@ -160,7 +161,13 @@ export default function HomePage() {
         <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-28 grid md:grid-cols-2 gap-14 items-center">
           {/* Copy */}
           <div>
-            <small className="block mb-3 text-xs font-bold uppercase tracking-[2px] text-gold-400">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-1.5 bg-gold-500/15 border border-gold-500/30 rounded-full px-3 py-1">
+                <Layers size={10} className="text-gold-400" />
+                <span className="text-[10px] font-bold text-gold-400 uppercase tracking-widest">Max EV Digital · Architecture Demo</span>
+              </div>
+            </div>
+            <small className="block mb-3 text-xs font-bold uppercase tracking-[2px] text-white/40">
               Generative overlay pattern · Enterprise financial wellness
             </small>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-5">
@@ -520,6 +527,191 @@ export default function HomePage() {
                     <p className="text-xs text-white/50 mt-0.5">{t.role}</p>
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ANY VERTICAL ─────────────────────────────────────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center gap-2 bg-navy-900 rounded-full px-4 py-1.5 mb-5">
+              <Layers size={12} className="text-gold-400" />
+              <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">Max EV Digital</span>
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              One architecture.{" "}
+              <span className="text-navy-800">Any vertical.</span>
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-sm leading-relaxed">
+              FinCoach is the financial wellness implementation of a pattern Max EV Digital deploys across industries.
+              The knowledge base changes. The RAG pipeline, fiduciary guardrails, and HR analytics layer stay the same.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+            {[
+              {
+                icon: Brain,
+                industry: "Financial Wellness",
+                rag: "401k, HSA, budgeting, retirement planning guides",
+                guardrails: "Fiduciary — no investment advice or specific security recs",
+                status: "Live Demo",
+                live: true,
+              },
+              {
+                icon: Heart,
+                industry: "Healthcare / Clinical",
+                rag: "Clinical guidelines, drug interactions, formulary docs",
+                guardrails: "HIPAA-aware — no diagnosis, always refer to physician",
+                status: "Ready to build",
+                live: false,
+              },
+              {
+                icon: Scale,
+                industry: "Legal Research",
+                rag: "Case law, firm playbooks, jurisdiction-specific statutes",
+                guardrails: "No attorney-client privilege — refer to licensed counsel",
+                status: "Ready to build",
+                live: false,
+              },
+              {
+                icon: Users,
+                industry: "HR & People Ops",
+                rag: "Employee handbook, labor law, EEOC regulations",
+                guardrails: "No legal conclusions — HR manager review required",
+                status: "Ready to build",
+                live: false,
+              },
+              {
+                icon: Home,
+                industry: "Real Estate",
+                rag: "MLS comparables, zoning codes, neighborhood market reports",
+                guardrails: "No appreciation guarantees — licensed agent required",
+                status: "Ready to build",
+                live: false,
+              },
+              {
+                icon: FileText,
+                industry: "Insurance",
+                rag: "Policy documents, claims guides, underwriting rules",
+                guardrails: "No coverage guarantees — licensed agent review required",
+                status: "Ready to build",
+                live: false,
+              },
+              {
+                icon: Headphones,
+                industry: "Customer Support",
+                rag: "Product docs, return policies, troubleshooting runbooks",
+                guardrails: "Escalate billing disputes and edge cases to human agents",
+                status: "Ready to build",
+                live: false,
+              },
+              {
+                icon: BookOpen,
+                industry: "Education / L&D",
+                rag: "Course curriculum, assessments, learning objectives",
+                guardrails: "No credential guarantees — academic advisor for formal decisions",
+                status: "Ready to build",
+                live: false,
+              },
+            ].map(({ icon: Icon, industry, rag, guardrails, status, live }) => (
+              <div
+                key={industry}
+                className={`rounded-xl p-5 border transition-shadow hover:shadow-md ${
+                  live
+                    ? "bg-navy-900 border-gold-500/40 ring-1 ring-gold-500/20"
+                    : "bg-slate-50 border-slate-200"
+                }`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                    live ? "bg-gold-500/20" : "bg-white border border-slate-200"
+                  }`}>
+                    <Icon size={16} className={live ? "text-gold-400" : "text-slate-500"} />
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    live
+                      ? "bg-gold-500/20 text-gold-400 border border-gold-500/30"
+                      : "bg-white text-slate-500 border border-slate-200"
+                  }`}>
+                    {status}
+                  </span>
+                </div>
+                <h3 className={`font-bold text-sm mb-2 ${live ? "text-white" : "text-slate-900"}`}>
+                  {industry}
+                </h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider ${live ? "text-gold-500/70" : "text-slate-400"}`}>
+                      RAG docs
+                    </span>
+                    <p className={`text-[11px] leading-relaxed mt-0.5 ${live ? "text-white/60" : "text-slate-500"}`}>{rag}</p>
+                  </div>
+                  <div>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider ${live ? "text-gold-500/70" : "text-slate-400"}`}>
+                      Guardrails
+                    </span>
+                    <p className={`text-[11px] leading-relaxed mt-0.5 ${live ? "text-white/60" : "text-slate-500"}`}>{guardrails}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <p className="text-sm text-slate-500 mb-2">
+              The knowledge base and guardrails are the only things that change between verticals.
+            </p>
+            <p className="text-xs text-slate-400">
+              Same FastAPI backend · same pgvector retrieval · same Next.js frontend · same Claude generation
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA ───────────────────────────────────────────────────────────── */}
+      <section className="bg-navy-900 py-20">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 bg-gold-500/15 border border-gold-500/25 rounded-full px-4 py-1.5 mb-6">
+            <Zap size={11} className="text-gold-400" />
+            <span className="text-xs font-bold text-gold-400 uppercase tracking-widest">Max EV Digital</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-5 leading-tight">
+            Want this built for{" "}
+            <span className="text-gold-400">your vertical?</span>
+          </h2>
+          <p className="text-white/60 text-base max-w-2xl mx-auto mb-10 leading-relaxed">
+            This is a live, production-quality demonstration of the RAG coaching pattern.
+            Max EV Digital builds specialized AI systems like this — with your knowledge base,
+            your data integrations, and your compliance requirements.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center mb-12">
+            <Link
+              href="/architecture"
+              className="inline-flex items-center gap-2 px-7 py-3.5 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold rounded-lg transition-colors"
+            >
+              See the Architecture <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-2 px-7 py-3.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold rounded-lg transition-colors"
+            >
+              Try the Live Demo
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-5 text-left">
+            {[
+              { title: "Bring your knowledge base", body: "PDFs, internal wikis, policy documents, regulatory content — we ingest, chunk, embed, and make it retrievable." },
+              { title: "We wire your data integrations", body: "User profiles, account data, CRM records — structured context injected into every prompt alongside retrieved docs." },
+              { title: "Guardrails for your domain", body: "Legal, medical, financial, HR — every vertical has different liability lines. We design the system prompt around yours." },
+            ].map(({ title, body }) => (
+              <div key={title} className="bg-white/5 border border-white/10 rounded-xl p-5">
+                <CheckCircle size={14} className="text-gold-400 mb-3" />
+                <h3 className="font-bold text-white text-sm mb-2">{title}</h3>
+                <p className="text-white/50 text-xs leading-relaxed">{body}</p>
               </div>
             ))}
           </div>
