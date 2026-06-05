@@ -2,7 +2,7 @@
 
 A RAG-powered, personalized AI Financial Wellness Coach with fiduciary guardrails and prompt evaluation. Built to demonstrate production-grade LLM application architecture on the same stack used by enterprise financial wellness platforms.
 
-**Live demo:** https://coach.maxevdigital.com
+**Live demo:** https://fincoach.maxevdigital.com
 
 ---
 
@@ -10,7 +10,7 @@ A RAG-powered, personalized AI Financial Wellness Coach with fiduciary guardrail
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    coach.maxevdigital.com                    │
+│                    fincoach.maxevdigital.com                    │
 │                     Next.js 14 Frontend                      │
 │   Landing │ AI Coach Demo │ Prompt Lab │ HR Insights         │
 └─────────────────────┬───────────────────────────────────────┘

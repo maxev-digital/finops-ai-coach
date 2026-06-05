@@ -8,7 +8,7 @@ Project context for Claude Code sessions. Update this file as part of any PR tha
 
 A production-quality demo of a RAG-powered AI Financial Wellness Coach, built to mirror the architecture of BrightPlan's AI Coach product. Originally built as a portfolio piece for a BrightPlan Applied AI Engineer application — designed to be launched as a real SMB financial wellness product if the opportunity presents.
 
-Live URL (once deployed): https://coach.maxevdigital.com
+Live URL (once deployed): https://fincoach.maxevdigital.com
 GitHub: https://github.com/[owner]/finops-ai-coach
 
 ---
@@ -17,7 +17,7 @@ GitHub: https://github.com/[owner]/finops-ai-coach
 
 ```
 frontend/          Next.js 14 App Router + shadcn/ui + Tailwind
-                   → serves coach.maxevdigital.com (port 3035 on VPS)
+                   → serves fincoach.maxevdigital.com (port 3035 on VPS)
 
 backend/           FastAPI (async) + SQLAlchemy async + pgvector
                    → internal API at 127.0.0.1:8002 on VPS
@@ -141,7 +141,7 @@ Flow: feature branch → PR to `develop` → merge → PR to `main` → deploy
 ## Domain + DNS
 
 - DNS A record: `coach` → `72.60.43.168` (needs to be added in registrar)
-- nginx config: `/etc/nginx/sites-enabled/coach.maxevdigital.com`
+- nginx config: `/etc/nginx/sites-enabled/fincoach.maxevdigital.com`
 - SSL: certbot (same pattern as all other projects on this VPS)
 
 ---
