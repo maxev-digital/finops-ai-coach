@@ -53,9 +53,11 @@ jobs:
 
       - name: Run tests
         env:
+          # Dummy values — all paid API calls are mocked in tests, these are never sent
           DATABASE_URL: postgresql+asyncpg://finops_test:finops_test@localhost:5432/finops_test
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY_TEST }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
+          ANTHROPIC_API_KEY: sk-ant-test-dummy-not-real
+          OPENAI_API_KEY: sk-test-dummy-not-real
+          REDIS_URL: redis://localhost:6379/0
           APP_ENV: test
         run: |
           cd backend
