@@ -1,3 +1,4 @@
+import json
 import anthropic
 from app.config import settings
 
@@ -16,7 +17,6 @@ async def generate(system_prompt: str, user_message: str, max_tokens: int = 1024
 
 async def generate_json(system_prompt: str, user_message: str, max_tokens: int = 1024) -> dict:
     """Prefill assistant turn with '{' to coerce JSON output reliably."""
-    import json
     response = _client.messages.create(
         model=settings.llm_model,
         max_tokens=max_tokens,

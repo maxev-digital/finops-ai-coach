@@ -6,11 +6,9 @@ Tests must never spend real money or require live API keys.
 """
 import pytest
 import pytest_asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
-
 from app.main import app
 from app.database import get_db, Base
 
