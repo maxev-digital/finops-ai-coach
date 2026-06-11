@@ -32,37 +32,35 @@ The Python/FastAPI/pgvector stack in the JD is **specifically for the generative
 
 ---
 
-## Current Build State (as of last session)
+## Current Build State (as of June 11 2026)
 
-### What is DONE and merged to develop/main:
+### Phase 1 — COMPLETE and deployed to VPS:
 - Full async FastAPI backend: config, database, models, schemas, main
 - All routers: /chat, /profile (users/goals/benefits), /evaluate
 - All services: rag.py (hybrid retrieval), llm.py, embeddings.py (Redis cache), evaluation.py
 - Prompt templates: V1 naive baseline + V2 production (prompts/coach.py)
 - Document ingestion pipeline (ingest/pipeline.py)
-- 5 knowledge base documents (retirement, benefits, budgeting, debt, investing)
+- 5 knowledge base documents (retirement, benefits, budgeting, debt, investing) — THIN, Phase 2 expands to 79
 - pytest smoke tests + conftest with mocked API clients
-- Backend CI (GitHub Actions) — all green
+- Backend CI (GitHub Actions) — green
+- Full Next.js 15 frontend: landing, /demo, /prompt-lab, /insights, /architecture pages
+- Max EV Digital branding + vertical portability showcase
+- HR Insights dashboard
+- ecosystem.config.js + deploy.sh
+- VPS: cloned at /var/www/finops-ai-coach, PM2 running, SSL live
+- Site live at https://fincoach.maxevdigital.com
 
-### What is IN PROGRESS (feat/frontend branch, PR open):
-- Next.js 15 frontend scaffolded: package.json, tsconfig, tailwind, next.config
-- Design system: brand blues (#1e40af) + wellness greens (#059669), Inter font
-- Nav component, root layout, globals.css
-- Landing page (page.tsx) — hero, stats, features, tech stack
-- lib/api.ts — typed fetch client
-- 3 feature pages: /demo (chat), /prompt-lab (eval comparison), /insights (HR analytics)
-- Components: ProfileSidebar, UserSelector, ScoreCard
-- Frontend CI — fixing lint/test errors (in progress)
-
-### What is NOT YET DONE:
-- [ ] VPS deploy: git clone to /var/www/finops-ai-coach, .env file, pm2 setup
-- [ ] deploy.sh script
-- [ ] ecosystem.config.js for PM2
-- [ ] Seed demo data on VPS (scripts/seed_demo_data.py)
-- [ ] Document ingestion run on VPS (make ingest)
-- [ ] Repo made public (currently private — make public after demo is live)
-- [ ] CLAUDE.md DNS section update (coach record is obsolete, fincoach is live)
-- [ ] Copy update: landing page should use "generative overlay" framing
+### Phase 2 — TO BUILD (this session):
+- [ ] Expand knowledge base from 5 → 79 documents across 15 CFP domains
+- [ ] Run `make ingest` on VPS after docs are written
+- [ ] Expand user intake to full 6-category profile system
+- [ ] Update system prompt to inject personalized user context into every query
+- [ ] Implement 3-tier model routing (Haiku → Sonnet → Opus)
+- [ ] Build financial wellness score (6-dimension, 0-100)
+- [ ] Update landing page: "RAG template system for any vertical" framing
+- [ ] Add locked vertical cards: Healthcare, Legal, Real Estate, HR Benefits
+- [ ] Make GitHub repo public
+- [ ] Add FinCoach card to maxevdigital.com portfolio
 
 ---
 
@@ -84,8 +82,8 @@ database/          PostgreSQL 16 + pgvector 0.8.2
 embeddings/        OpenAI text-embedding-3-small (1536 dims)
                    → cached in Redis with 1hr TTL (graceful degrade if Redis down)
 
-generation/        Anthropic claude-sonnet-4-6
-                   → direct SDK (not LangChain wrapper)
+generation/        3-tier model routing (Phase 2 — see section below)
+                   → direct Anthropic SDK (not LangChain wrapper)
                    → LangChain used ONLY for text splitting in ingest pipeline
 
 vector search/     Raw pgvector SQL — cosine distance operator <=>
@@ -95,12 +93,128 @@ vector search/     Raw pgvector SQL — cosine distance operator <=>
 
 ---
 
+## Phase 2: Multi-Model Routing
+
+Three model constants in backend/services/llm.py:
+
+```python
+MODEL_CLASSIFIER = "claude-haiku-4-5-20251001"   # domain routing
+MODEL_GENERATOR  = "claude-sonnet-4-6"            # hot path, streaming
+MODEL_EVALUATOR  = "claude-opus-4-8"              # async quality judge
+```
+
+**4-step personalization pipeline per query:**
+
+1. **CLASSIFY (Haiku)** — determine CFP domain(s) the query touches (tax, retirement, estate, etc.) → drives targeted vector retrieval. Sub-100ms, pure classification.
+
+2. **GENERATE (Sonnet)** — user profile snapshot + retrieved chunks + query → streaming response. Sonnet on hot path = fast perceived performance. For grounded RAG the quality delta vs Opus is minimal — retrieval does the heavy lifting.
+
+3. **EVALUATE (Opus, async)** — runs AFTER response is streamed to user. Cross-model eval: Opus catching Sonnet's errors is the only direction that works asymmetrically. Same-model eval shares blindspots. Scores 4 dimensions:
+   - Personalization: did response use the user's actual numbers?
+   - Grounding: every claim traceable to a retrieved source doc?
+   - Actionability: concrete next step given?
+   - Safety: no unlicensed investment advice?
+
+4. **PROMPT LAB** — Sonnet × 2 parallel (V1 and V2) → Opus judge → comparative analysis declaring winner with specific reasoning citing user's actual data.
+
+**Future:** Add a third vendor (e.g. Google Gemini or OpenAI GPT-4o) for evaluation diversity. Anthropic evaluating Anthropic has residual vendor bias. Third-party judge eliminates it.
+
+**Why not Opus on the hot path?**
+Demo UX: streaming latency is visible. Sonnet streams 2-3x faster. Opus runs where latency doesn't matter — the async eval the user never waits on.
+
+---
+
+## Phase 2: Knowledge Base Expansion
+
+**Target: 79 documents → ~320-400 chunks** (up from 5 docs / 16 chunks)
+
+All documents are markdown files in `backend/ingest/documents/`. Run `make ingest` on VPS after adding new files.
+
+| Domain | Docs | Key Topics |
+|--------|------|-----------|
+| Tax Planning | 8 | Brackets, cap gains, Roth conversions, QBI, IRMAA, SALT, charitable |
+| Retirement Savings | 7 | 401k/403b, IRAs, Roth, SEP/SIMPLE/Solo, RMDs (SECURE 2.0), NUA, 72(t) |
+| Retirement Income | 6 | SS optimization, pension lump-sum, 4% rule, sequence of returns, withdrawal order |
+| Investment Planning | 7 | Asset allocation, passive vs active, factor investing, TLH, asset location, rebalancing |
+| Estate Planning | 8 | Will vs trust, ILIT, GRAT, QTIP, beneficiary designations, gift exclusion, exemption sunset |
+| Insurance & Risk | 5 | Term vs perm, disability (own-occ), LTC hybrid, umbrella, buy-sell |
+| Healthcare Planning | 5 | Medicare A/B/C/D, Medigap, IRMAA, HSA triple tax, ACA subsidy cliff |
+| Education Funding | 4 | 529 superfunding, Coverdell, UGMA/UTMA, FAFSA optimization, SECURE 2.0 529→Roth |
+| Debt Strategy | 4 | Mortgage refi, student loan IDR/PSLF, avalanche/snowball, HELOC vs cash-out |
+| Business Owner | 5 | S-Corp vs LLC, Solo 401k vs SEP-IRA, QBI, succession, key person insurance |
+| Equity Compensation | 4 | RSU taxation, ISO vs NSO AMT, ESPP, 83(b), concentrated stock, Rule 144 |
+| Behavioral Finance | 3 | Loss aversion, recency bias, DCA as behavior management |
+| Life Stage Planning | 6 | New grad, marriage, new parent, pre-retirement Roth window, retirement transition, widowed/divorced |
+| Government Benefits | 3 | SS COLA history, FRA by birth year table, Medicare enrollment windows |
+| IRS Reference Data | 4 | 2024/2025 contribution limits, tax brackets all filing statuses, standard deductions, cap gains thresholds |
+
+---
+
+## Phase 2: User Intake & Personalization
+
+Full 6-category intake captured in profile form, stored in profiles table, injected into every query.
+
+**Intake categories:**
+1. **Identity** — age, state, filing status, spouse age, dependents, employment status
+2. **Income** — W-2, self-employment, rental, investment, Social Security, pension, spouse — and stability (stable/variable/seasonal)
+3. **Assets by tax bucket** — tax-deferred (401k, IRA), Roth (Roth IRA, Roth 401k), taxable (brokerage, savings), real estate (primary, investment), other (business equity, HSA, 529)
+4. **Liabilities** — mortgage (balance/rate/years remaining), student loans (balance/rate/type/plan), credit cards (total/avg rate), other debt
+5. **Goals** (ranked) — retirement target age + monthly income, education funding, home purchase, other (business, legacy, FIRE)
+6. **Risk + Tax** — risk tolerance 1-5, prior loss experience, estimated bracket, state income tax, equity comp (yes/no), expected inheritance
+
+**Personalization prompt injection:**
+Every chat request builds a structured user context block before retrieval:
+```
+User context: 52yo, married filing jointly, Texas (no state income tax),
+W-2 $145K + spouse $72K = $217K household.
+Assets: $680K traditional 401k, $45K Roth IRA, $120K taxable brokerage,
+$380K primary home ($210K mortgage remaining at 3.1%).
+Goals: retire at 62, target $8K/mo income.
+Risk: moderate. Tax bracket: 24% federal.
+```
+This block is prepended to the system prompt on every request — not just when the user asks something profile-specific.
+
+---
+
+## Phase 2: Multi-Vertical Template System
+
+Financial Advisor is the primary live vertical. Others shown as locked templates on landing page to demonstrate the "RAG template system for any vertical" pitch.
+
+| Vertical | Status | Primary Use Case |
+|----------|--------|-----------------|
+| Financial Advisor | LIVE | BrightPlan demo — full personalization |
+| Healthcare Benefits Coach | LOCKED | HR benefits navigation, FSA/HSA, plan comparison |
+| Real Estate Advisor | LOCKED | Buy vs rent, mortgage math, 1031 exchange |
+| Legal Self-Help | LOCKED | Contract basics, employment law, tenant rights |
+| HR Benefits Coach | LOCKED | Total comp optimization, equity, 401k matching |
+
+Locked verticals show teaser copy + "Coming Soon" state. No code needed — visual demo of the platform concept.
+
+---
+
+## Phase 2: Financial Wellness Score
+
+6-dimension score (0-100), modeled after BrightPlan's patented 500-point score.
+
+| Dimension | What It Measures |
+|-----------|-----------------|
+| Cash Flow | Emergency fund months + monthly surplus/deficit |
+| Debt Ratio | Total debt service / gross income (28% mortgage / 36% total rule) |
+| Retirement Track | On pace for target retirement income at target age |
+| Protection | Life/disability/LTC coverage adequacy |
+| Tax Efficiency | Roth vs traditional allocation, TLH usage, tax-advantaged account maximization |
+| Estate Readiness | Will exists, beneficiaries current, key account POD designations |
+
+Score displayed on /demo sidebar. Recalculates when profile is updated.
+
+---
+
 ## VPS Infrastructure (all live)
 
 ```
 Server:           root@72.60.43.168
 SSH key:          ~/.ssh/id_ed25519
-Project root:     /var/www/finops-ai-coach  (NOT CLONED YET — next step)
+Project root:     /var/www/finops-ai-coach  (CLONED AND RUNNING)
 Frontend PM2:     finops-coach-frontend  (port 3035)
 Backend PM2:      finops-coach-api       (port 8002, internal only)
 DB container:     finops-coach-db        (port 5445)
@@ -123,15 +237,13 @@ DATABASE_URL=postgresql+asyncpg://finops_coach:finops_coach_secure_2026@localhos
 ## Git Branch State
 
 ```
-main      ← has backend + frontend code (PR #2 accidentally merged here, then synced)
-develop   ← synced with main, use as base for all new branches
-feat/frontend ← current active branch, PR open, CI in progress
+main      ← fully deployed, Phase 1 complete (frontend + backend + VPS)
+develop   ← use as base for all Phase 2 branches
 ```
 
 **Always branch from develop. Always PR to develop. main → production only.**
 
-Note: PR #2 (feat/rag-pipeline) was accidentally merged to main instead of develop.
-Fixed by running: git checkout develop && git merge origin/main && git push origin develop.
+Phase 2 branches will follow pattern: `feat/kb-expansion`, `feat/model-routing`, `feat/user-intake`, etc.
 
 ---
 
