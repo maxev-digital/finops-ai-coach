@@ -234,6 +234,71 @@ DATABASE_URL=postgresql+asyncpg://finops_coach:finops_coach_secure_2026@localhos
 
 ---
 
+## Phase 3: Product Launch Roadmap
+
+**Objective:** Turn the BrightPlan demo into a shippable B2B/B2C financial wellness product.
+
+**B2B vs B2C:** Start B2B. Employer buys seats (HR admin onboards, employees use). Higher LTV ($15–25/seat/mo × headcount), HR Insights page already built as buyer demo, and it mirrors BrightPlan's own go-to-market. Individual B2C ($19–29/mo) is Plan B if B2B sales cycle is too long.
+
+---
+
+### Sprint 1: Auth + Onboarding (Weeks 1–2)
+
+- [ ] User authentication — NextAuth.js or Clerk. Email/password + Google OAuth.
+- [ ] Employer admin vs employee role distinction in DB schema
+- [ ] Protected routes: /demo, /prompt-lab, /insights require login
+- [ ] 6-category profile intake wizard (wire the Phase 2 intake form to a real onboarding flow)
+- [ ] Financial wellness score displayed on /demo sidebar after onboarding
+
+### Sprint 2: Billing (Weeks 2–3)
+
+- [ ] Stripe Checkout + webhooks
+- [ ] Pricing: Individual $24/mo · Team (up to 25 seats) $199/mo · Enterprise (custom)
+- [ ] Stripe Customer Portal for plan management / cancellation
+- [ ] 14-day free trial gating (no credit card on trial)
+
+### Sprint 3: Frontend Polish (Weeks 3–4)
+
+- [ ] Landing page: real pricing section, "Request Demo" CTA above the fold
+- [ ] Testimonials / social proof placeholder
+- [ ] Mobile responsiveness audit — all 5 pages
+- [ ] Demo page: loading states, error handling, empty states for new users
+- [ ] HR Insights: real org-level wellness trend chart (replace static sparkline)
+- [ ] Prompt Lab: URL-shareable result states (query params on ?q=&uid=)
+
+### Sprint 4: Model Routing Implementation (Weeks 4–5)
+
+- [ ] backend/services/llm.py: implement Haiku classifier → domain enum
+- [ ] Modify rag.py to accept domain hint from classifier → targeted retrieval
+- [ ] Async Opus evaluation: store eval scores in new `eval_results` table
+- [ ] Wire eval scores to Prompt Lab display (already has ScoreCard UI)
+
+### Sprint 5: Launch (Week 6)
+
+- [ ] Make GitHub repo public (clean sensitive data first)
+- [ ] Add FinCoach to maxevdigital.com portfolio
+- [ ] Submit to ProductHunt
+- [ ] LinkedIn post with demo video
+- [ ] Email 3–5 target HR/benefits buyer contacts for early access
+
+---
+
+### Rocket Money Features — Decision
+
+**Not in scope for Phase 3.** Rocket Money's core is bank account aggregation (Plaid), transaction categorization, and subscription cancellation. Our differentiation is AI advisory depth, not spend tracking.
+
+**What we have:** Manually-entered profile (income, assets, goals). No bank connection.
+
+**If Plaid is added (Phase 4+):**
+- Plaid Link UI: ~$0.10–0.30/linked item/month
+- Auto-populate income/assets/liabilities from real accounts
+- Transaction categorization for cash flow scoring
+- This becomes the "Pro" tier add-on ($5–10/month extra)
+- Development effort: ~2–3 weeks for backend + UI
+- Keep manual profile as fallback — Plaid is optional enhancement, not requirement
+
+---
+
 ## Git Branch State
 
 ```
