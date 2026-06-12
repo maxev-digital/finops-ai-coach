@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from pathlib import Path
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from app.database import SessionLocal as _SessionLocal, init_db
+from app.database import init_db
 from app.models import DocumentChunk
 from app.services.embeddings import embed_batch
 from app.config import settings
