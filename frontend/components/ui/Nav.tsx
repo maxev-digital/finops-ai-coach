@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Brain, Menu, X } from "lucide-react";
+import { Brain, Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 const links = [
   { href: "/demo", label: "AI Coach" },
@@ -15,6 +16,7 @@ const links = [
 export default function Nav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   return (
     <header className="sticky top-0 z-50 bg-navy-900/95 backdrop-blur border-b border-white/10">
@@ -50,13 +52,41 @@ export default function Nav() {
           })}
         </nav>
 
-        {/* Desktop CTA */}
-        <Link
-          href="/demo"
-          className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold rounded-lg transition-colors text-sm"
-        >
-          Try the Demo
-        </Link>
+        {/* Desktop right */}
+        <div className="hidden md:flex items-center gap-3">
+          {status === "authenticated" && session ? (
+            <>
+              <div className="flex items-center gap-2 text-sm text-white/60">
+                <div className="w-7 h-7 bg-gold-500/20 rounded-full flex items-center justify-center">
+                  <User size={13} className="text-gold-400" />
+                </div>
+                <span className="max-w-[120px] truncate">{session.user.name ?? session.user.email}</span>
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <LogOut size={13} />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm text-white/60 hover:text-white transition-colors font-medium px-3 py-2"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold rounded-lg transition-colors text-sm"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
+        </div>
 
         {/* Mobile hamburger */}
         <button
@@ -88,13 +118,26 @@ export default function Nav() {
               </Link>
             );
           })}
-          <Link
-            href="/demo"
-            onClick={() => setOpen(false)}
-            className="block mt-3 px-4 py-2.5 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold rounded-lg text-sm text-center"
-          >
-            Try the Demo
-          </Link>
+          {status === "authenticated" ? (
+            <button
+              onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
+              className="flex items-center gap-2 mt-3 px-4 py-2.5 text-sm text-white/50 hover:text-white w-full rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <LogOut size={14} />
+              Sign out
+            </button>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setOpen(false)}
+                className="block mt-2 px-4 py-2.5 text-sm text-white/60 rounded-lg hover:bg-white/10 hover:text-white transition-colors font-medium">
+                Sign in
+              </Link>
+              <Link href="/register" onClick={() => setOpen(false)}
+                className="block mt-1 px-4 py-2.5 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold rounded-lg text-sm text-center">
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       )}
     </header>

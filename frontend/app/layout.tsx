@@ -3,6 +3,7 @@ import "./globals.css";
 import Nav from "@/components/ui/Nav";
 import Link from "next/link";
 import { Brain, Github, ExternalLink, Zap } from "lucide-react";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "FinCoach AI — Financial Wellness Coach",
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <SessionProvider>
         {/* Max EV Digital brand bar */}
         <div className="bg-slate-950 border-b border-white/5 py-2">
           <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
@@ -154,6 +156,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </SessionProvider>
       </body>
     </html>
   );
