@@ -1,121 +1,144 @@
-# FinOps AI Coach
+# FinCoach AI
 
-A RAG-powered, personalized AI Financial Wellness Coach with fiduciary guardrails and prompt evaluation. Built to demonstrate production-grade LLM application architecture on the same stack used by enterprise financial wellness platforms.
+A production-grade RAG financial wellness coach demonstrating the generative overlay architecture used by enterprise financial wellness platforms. Deployed at [fincoach.maxevdigital.com](https://fincoach.maxevdigital.com).
 
-**Live demo:** https://fincoach.maxevdigital.com
+## What This Demonstrates
+
+This is a live, working implementation of the **generative overlay pattern** — a RAG-powered AI layer on top of structured user data. The same architecture applies to any domain with a knowledge base and guardrails requirement (healthcare, legal, HR, insurance).
+
+Key engineering concepts:
+
+- **3-tier model routing**: Haiku (domain classify, <100ms) → Sonnet (RAG generation) → Opus (async LLM-as-judge eval)
+- **Domain-aware pgvector retrieval**: Haiku classifies the query intent, filters `doc_chunks` by domain tag before cosine search — better precision than naive top-k
+- **Structured profile injection**: User's age, income, risk tolerance, goals, and employer benefits (401k match, HSA, ESPP) injected into every system prompt
+- **Fiduciary guardrails at the prompt layer**: No investment advice, no specific security recommendations, human advisor escalation on edge cases
+- **Prompt engineering evaluation**: V1 vs V2 side-by-side with LLM-as-judge scoring on 4 dimensions (relevance, actionability, personalization, safety)
+- **Credential auth with JWT sessions**: NextAuth v5 with CredentialsProvider, JWT strategy, bcrypt password hashing
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    fincoach.maxevdigital.com                    │
-│                     Next.js 14 Frontend                      │
-│   Landing │ AI Coach Demo │ Prompt Lab │ HR Insights         │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ API calls (/api/*)
-┌─────────────────────▼───────────────────────────────────────┐
-│              FastAPI Backend (Python 3.12)                   │
-│                                                             │
-│  /chat      RAG pipeline → Claude generation                │
-│  /profile   User profiles, goals, employer benefits         │
-│  /evaluate  V1 vs V2 prompt comparison + LLM-as-judge       │
-└──────┬─────────────────────────┬───────────────────────────┘
-       │                         │
-┌──────▼──────┐         ┌────────▼────────┐
-│  PostgreSQL  │         │   OpenAI API    │
-│  + pgvector  │         │  (embeddings)   │
-│  port 5445   │         └─────────────────┘
-│              │         ┌─────────────────┐
-│  users       │         │  Anthropic API  │
-│  profiles    │         │  (generation)   │
-│  goals       │         └─────────────────┘
-│  benefits    │         ┌─────────────────┐
-│  messages    │         │     Redis       │
-│  doc_chunks  │         │  (embed cache)  │
-└──────────────┘         └─────────────────┘
+Browser
+  │
+  ▼
+Next.js 15 (PM2, standalone)         fincoach.maxevdigital.com
+  │  /auth/*  → NextAuth v5 (JWT session)
+  │  /api/*   → nginx proxy
+  │
+  ▼
+FastAPI + Python 3.11 (port 8002)
+  │
+  ├── /chat        3-tier pipeline (classify → retrieve → generate → [async eval])
+  ├── /register    bcrypt credential creation
+  ├── /login       bcrypt credential verify → returns AuthUser
+  ├── /profile     CRUD: user, profile, goals, benefits
+  ├── /evaluate    V1 vs V2 prompt eval (Opus as judge)
+  └── /wellness    Computed financial wellness score
+  │
+  ├── PostgreSQL + pgvector (port 5445, Docker)
+  │     users · profiles · goals · benefits · conversations · messages · doc_chunks
+  │
+  ├── Redis (embedding cache, 1hr TTL)
+  │
+  ├── OpenAI text-embedding-3-small (1536 dims)
+  │
+  └── Anthropic Claude
+        Haiku  — domain classification
+        Sonnet — RAG answer generation
+        Opus   — async LLM-as-judge evaluation
 ```
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14, TypeScript, Tailwind CSS, shadcn/ui |
-| Backend | FastAPI, Python 3.12, async SQLAlchemy |
-| Database | PostgreSQL 16 + pgvector extension |
-| Vector Search | pgvector cosine similarity (`<=>` operator) |
+| Frontend | Next.js 15, TypeScript, Tailwind CSS |
+| Auth | NextAuth v5 (CredentialsProvider, JWT strategy) |
+| Backend | FastAPI, Python 3.11, async SQLAlchemy |
+| Database | PostgreSQL 16 + pgvector |
+| Vector Search | pgvector cosine similarity — domain-filtered retrieval |
 | Embeddings | OpenAI text-embedding-3-small (1536 dims) |
-| Generation | Anthropic Claude claude-sonnet-4-6 |
-| Caching | Redis (embedding cache, 1hr TTL) |
-| Ingestion | LangChain (text splitting only) |
-| Infrastructure | Docker (Postgres), PM2, nginx, certbot |
+| Generation | Anthropic Claude Sonnet |
+| Evaluation | Anthropic Claude Opus (async LLM-as-judge) |
+| Classifier | Anthropic Claude Haiku (domain routing) |
+| Caching | Redis (embedding cache) |
+| Infrastructure | Docker (Postgres), PM2 ecosystem, nginx, certbot TLS |
+
+---
 
 ## Features
 
-- **AI Coach Chat** — Hybrid RAG retrieval over financial wellness documents + structured user context injection. Responses are grounded, personalized, and include fiduciary disclaimers.
-- **Personalization** — User profiles with goals, risk tolerance, and employer benefits (401k match, HSA, ESPP) injected into every prompt.
-- **Prompt Lab** — Side-by-side comparison of V1 (naive baseline) vs V2 (production-grade) prompts on the same query, scored by Claude-as-judge on relevance, actionability, personalization, and safety.
-- **HR Insights** — Aggregated analytics across users: top question categories, goal completion rates, benefit utilization gaps.
+### AI Coach (`/demo`)
+Personalized financial guidance grounded in the user's own profile and employer benefits. Every response is generated by Sonnet against domain-filtered pgvector results. Sources surfaced inline. Domain tag shown per response.
+
+### Prompt Lab (`/prompt-lab`)
+Run any financial query through V1 (naive baseline) and V2 (production-grade) prompts simultaneously. Opus acts as judge and scores both on relevance, actionability, personalization, and safety. Side-by-side output with winner declaration.
+
+### HR Insights (`/insights`)
+Aggregated, privacy-safe workforce analytics. Emergency fund coverage, retirement account rates, benefit utilization (401k/HSA/ESPP), goal completion rate, and a computed financial wellness score (A–D grade). Alert strip surfaces actionable HR recommendations.
+
+### Architecture Page (`/architecture`)
+Interactive diagram of the 3-tier model routing pipeline and RAG retrieval flow — designed to explain the system to a technical interviewer.
+
+### Auth (`/register`, `/login`, `/onboarding`)
+NextAuth v5 credentials auth. Registration creates a bcrypt-hashed user in Postgres via FastAPI. Login verifies credentials and issues a JWT session. Onboarding wizard captures financial profile and employer benefits.
+
+---
 
 ## Local Development
 
 ### Prerequisites
-- Python 3.12+
+- Python 3.11+
 - Node.js 20+
-- Docker
+- Docker (for Postgres + pgvector)
 - Redis
 
 ### Backend
 
 ```bash
 cd backend
-cp .env.example .env          # fill in API keys
-pip install -r requirements-dev.txt
+cp .env.example .env          # fill in ANTHROPIC_API_KEY, OPENAI_API_KEY
+pip install -r requirements.txt
 
 # Start Postgres with pgvector
 docker run -d \
   --name finops-db-local \
-  -e POSTGRES_USER=finops \
-  -e POSTGRES_PASSWORD=finops_dev \
-  -e POSTGRES_DB=finops \
-  -p 5432:5432 \
+  -e POSTGRES_USER=finops_coach \
+  -e POSTGRES_PASSWORD=finops_coach_dev \
+  -e POSTGRES_DB=finops_coach \
+  -p 5445:5432 \
   pgvector/pgvector:pg16
 
-# Run database migrations
-make db-init
+# Initialize schema
+python -m app.database_init      # or: make db-init
 
-# Ingest knowledge base documents
-make ingest
+# Ingest knowledge base (82 documents → 1,133 chunks)
+python ingest/pipeline.py
 
 # Seed demo users
-make seed
+python scripts/seed_demo_data.py
 
 # Start API server
-make dev
-# → http://localhost:8000
-# → http://localhost:8000/docs  (OpenAPI)
+uvicorn app.main:app --reload --port 8002
+# → http://localhost:8002
+# → http://localhost:8002/docs  (OpenAPI)
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-cp .env.local.example .env.local
+cp .env.local.example .env.local     # add AUTH_SECRET, NEXTAUTH_URL, INTERNAL_API_URL
 npm install
 npm run dev
 # → http://localhost:3000
 ```
 
-### Running Tests
-
-```bash
-# Backend
-cd backend && make test
-
-# Frontend
-cd frontend && npm test
-```
+---
 
 ## Project Structure
 
@@ -125,73 +148,107 @@ finops-ai-coach/
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── config.py
-│   │   ├── database.py          # async SQLAlchemy + pgvector
-│   │   ├── models.py
+│   │   ├── database.py              # async SQLAlchemy + pgvector
+│   │   ├── models.py                # User, Profile, Goal, Benefit, Message, DocChunk
 │   │   ├── schemas.py
-│   │   ├── routers/             # chat, profile, evaluate
-│   │   ├── services/            # rag, llm, embeddings, evaluation
-│   │   └── prompts/             # V1 baseline + V2 production templates
+│   │   ├── routers/
+│   │   │   ├── auth.py              # /register, /login (bcrypt + passlib)
+│   │   │   ├── chat.py              # 3-tier RAG pipeline
+│   │   │   ├── profile.py           # user CRUD
+│   │   │   ├── evaluate.py          # Opus LLM-as-judge
+│   │   │   └── wellness.py          # computed wellness score
+│   │   ├── services/
+│   │   │   ├── classifier.py        # Haiku domain classification
+│   │   │   ├── rag.py               # pgvector retrieval
+│   │   │   ├── llm.py               # Sonnet generation
+│   │   │   └── evaluation.py        # async Opus evaluation
+│   │   └── prompts/                 # v1_baseline.py, v2_production.py
 │   ├── ingest/
-│   │   ├── pipeline.py          # document ingestion
-│   │   └── documents/           # financial wellness knowledge base
-│   ├── tests/
-│   │   ├── conftest.py          # fixtures, mocked API clients
-│   │   ├── test_api_chat.py
-│   │   ├── test_api_profile.py
-│   │   └── test_rag.py
+│   │   ├── pipeline.py              # PDF → chunk → embed → pgvector
+│   │   └── documents/               # 82 financial wellness documents
 │   ├── requirements.txt
-│   ├── requirements-dev.txt
 │   └── Makefile
 ├── frontend/
 │   ├── app/
-│   │   ├── page.tsx             # landing
-│   │   ├── demo/page.tsx        # AI Coach interface
-│   │   ├── prompt-lab/page.tsx  # prompt engineering demo
-│   │   └── insights/page.tsx    # HR analytics
+│   │   ├── page.tsx                 # landing (pricing, features, how it works)
+│   │   ├── demo/page.tsx            # AI Coach — session user, pgvector RAG chat
+│   │   ├── prompt-lab/page.tsx      # V1 vs V2 eval with LLM judge
+│   │   ├── insights/page.tsx        # HR analytics dashboard
+│   │   ├── architecture/page.tsx    # system architecture diagram
+│   │   ├── login/page.tsx           # NextAuth credentials sign-in
+│   │   ├── register/page.tsx        # user registration → auto sign-in
+│   │   ├── onboarding/page.tsx      # 3-step profile wizard
+│   │   └── auth/[...nextauth]/      # NextAuth v5 route handler
+│   ├── auth.ts                      # NextAuth config (basePath: /auth)
+│   ├── middleware.ts                 # route protection for /demo /insights /onboarding
 │   ├── components/
-│   └── lib/
-├── .github/
-│   └── workflows/               # CI for backend + frontend
-├── docker/
-│   └── init.sql                 # pgvector extension setup
-├── scripts/
-│   ├── seed_demo_data.py
-│   └── deploy.sh
-├── CLAUDE.md                    # AI session context (this project)
+│   │   ├── ui/Nav.tsx               # sticky nav with session-aware auth state
+│   │   ├── profile/ProfileSidebar.tsx
+│   │   ├── chat/UserSelector.tsx
+│   │   └── prompt-lab/ScoreCard.tsx
+│   ├── lib/api.ts                   # typed FastAPI client
+│   └── types/next-auth.d.ts         # session.user.id type extension
+├── pm2.config.js                    # PM2 ecosystem — env vars baked in for reboots
 └── README.md
 ```
 
+---
+
 ## Deployment
 
-```bash
-# One-time VPS setup
-ssh root@72.60.43.168
-cd /var/www && git clone https://github.com/[owner]/finops-ai-coach.git
-cd finops-ai-coach && ./scripts/deploy.sh --first-run
+The project uses git for deploys (exception to the SCP-only rule for other projects).
 
-# Every subsequent deploy
-ssh root@72.60.43.168 "cd /var/www/finops-ai-coach && ./scripts/deploy.sh"
+```bash
+# On VPS — every deploy
+cd /var/www/finops-ai-coach
+git pull origin main
+cd frontend && npm run build
+cp -r .next/static .next/standalone/.next/static
+cp -r public .next/standalone/public
+cd /var/www/finops-ai-coach
+pm2 reload pm2.config.js --update-env
+pm2 save
 ```
+
+---
 
 ## Demo Users
 
-Three pre-seeded personas covering different life stages:
+Three pre-seeded personas covering different financial life stages:
 
 | User | Age | Situation | Primary Goal |
 |------|-----|-----------|-------------|
 | Alex Chen | 28 | Tech worker, student loans, ESPP available | Emergency fund + debt payoff |
 | Maria Rodriguez | 42 | Mid-career, home purchase in 3 years | Down payment savings |
-| Jordan Kim | 55 | Pre-retirement, conservative | Retire at 65 with $1.2M |
+| Jordan Kim | 55 | Pre-retirement, conservative | Retire at 65 |
+
+---
+
+## Knowledge Base
+
+82 documents across 7 financial wellness domains, ingested into pgvector:
+
+| Domain | Topics |
+|--------|--------|
+| `retirement_savings` | 401(k), IRA, Roth, contribution limits, employer match |
+| `tax_planning` | Tax brackets, deductions, W-4, estimated taxes |
+| `debt_management` | Student loans, credit cards, debt avalanche/snowball |
+| `emergency_fund` | Savings targets, high-yield accounts, liquidity |
+| `benefits_optimization` | HSA, ESPP, FSA, life insurance, commuter benefits |
+| `budgeting` | 50/30/20, zero-based, pay yourself first |
+| `estate_planning` | Wills, beneficiaries, power of attorney basics |
+
+---
 
 ## Prompt Engineering
 
 Two prompt versions are maintained for the evaluation feature:
 
-- **V1 (Baseline)**: Minimal system prompt, no personalization, no structured response format
-- **V2 (Production)**: Fiduciary guardrails, full profile injection, structured coaching format, explicit safety rules
+- **V1 (Baseline)**: Minimal system prompt, no personalization, generic financial guidance
+- **V2 (Production)**: Fiduciary guardrails, full profile injection, domain-aware tone, structured coaching format, explicit safety rules, source citation instructions
 
-The `/prompt-lab` page runs both on the same query and uses Claude-as-judge to score on four dimensions: Relevance, Actionability, Personalization, Safety.
+The `/prompt-lab` page runs both on the same query and uses Claude Opus as judge, scoring on four dimensions and declaring a winner.
 
 ---
 
-*This is a demonstration project. All financial content is general education only, not personalized financial advice. Consult a licensed financial advisor for decisions specific to your situation.*
+*This is a demonstration project. Financial content is general education only — not personalized financial advice. Consult a licensed financial advisor for decisions specific to your situation.*

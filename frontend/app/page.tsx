@@ -5,7 +5,66 @@ import {
   MessageSquare, Database, Sparkles, Quote,
   Target, DollarSign, Lightbulb,
   Heart, Scale, Home, Headphones, BookOpen, Users, FileText, Layers,
+  Star,
 } from "lucide-react";
+
+const PRICING = [
+  {
+    name: "Starter",
+    price: "Free",
+    period: "",
+    desc: "Try the full coaching experience with one user profile.",
+    highlight: false,
+    cta: "Get Started Free",
+    href: "/register",
+    features: [
+      "1 employee profile",
+      "AI financial wellness coach",
+      "RAG-grounded responses",
+      "Goal tracking",
+      "Basic benefit surfacing",
+    ],
+    missing: ["HR analytics dashboard", "Multi-user management", "Custom knowledge base", "Dedicated onboarding"],
+  },
+  {
+    name: "Team",
+    price: "$199",
+    period: "/mo",
+    desc: "Full deployment for HR teams up to 500 employees.",
+    highlight: true,
+    badge: "Most Popular",
+    cta: "Book a Demo",
+    href: "mailto:info@max-ev-holdings.com?subject=FinCoach Team Plan",
+    features: [
+      "Up to 500 employee profiles",
+      "HR analytics dashboard",
+      "Benefits utilization tracking",
+      "Custom employer knowledge base",
+      "Priority support",
+      "Onboarding assistance",
+    ],
+    missing: ["Enterprise SSO", "Custom compliance guardrails"],
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    desc: "Bespoke deployment with your data integrations and compliance stack.",
+    highlight: false,
+    cta: "Contact Us",
+    href: "mailto:info@max-ev-holdings.com?subject=FinCoach Enterprise",
+    features: [
+      "Unlimited employees",
+      "Custom RAG knowledge base",
+      "HRIS / benefits platform integration",
+      "Enterprise SSO (SAML/OIDC)",
+      "Custom compliance guardrails",
+      "Dedicated success manager",
+      "SLA + uptime guarantee",
+    ],
+    missing: [],
+  },
+];
 
 /* ─── Data ─────────────────────────────────────────────────────────────────── */
 
@@ -530,6 +589,94 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── PRICING ──────────────────────────────────────────────────────── */}
+      <section className="py-20 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <small className="block mb-2 text-xs font-bold uppercase tracking-[2px] text-brand-600">
+              Pricing
+            </small>
+            <h2 className="text-3xl font-bold text-slate-900">
+              Simple, transparent{" "}
+              <span className="text-brand-700">pricing</span>
+            </h2>
+            <p className="text-slate-500 mt-3 max-w-xl mx-auto text-sm leading-relaxed">
+              Start free. Scale when your workforce is ready.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {PRICING.map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative rounded-2xl flex flex-col ${
+                  plan.highlight
+                    ? "bg-navy-900 text-white shadow-xl ring-2 ring-gold-500/50"
+                    : "bg-white border border-slate-200"
+                }`}
+              >
+                {plan.badge && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <div className="flex items-center gap-1.5 bg-gold-500 text-navy-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                      <Star size={8} />
+                      {plan.badge}
+                    </div>
+                  </div>
+                )}
+                <div className={`p-7 border-b ${plan.highlight ? "border-white/10" : "border-slate-100"}`}>
+                  <h3 className={`font-bold text-lg mb-1 ${plan.highlight ? "text-white" : "text-slate-900"}`}>
+                    {plan.name}
+                  </h3>
+                  <div className="flex items-baseline gap-1 mb-3">
+                    <span className={`text-4xl font-bold ${plan.highlight ? "text-gold-400" : "text-slate-900"}`}>
+                      {plan.price}
+                    </span>
+                    {plan.period && (
+                      <span className={`text-sm ${plan.highlight ? "text-white/50" : "text-slate-400"}`}>
+                        {plan.period}
+                      </span>
+                    )}
+                  </div>
+                  <p className={`text-sm leading-relaxed ${plan.highlight ? "text-white/60" : "text-slate-500"}`}>
+                    {plan.desc}
+                  </p>
+                </div>
+                <div className="p-7 flex-1 flex flex-col">
+                  <ul className="space-y-2.5 mb-8 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle size={14} className={`mt-0.5 shrink-0 ${plan.highlight ? "text-gold-400" : "text-brand-600"}`} />
+                        <span className={plan.highlight ? "text-white/80" : "text-slate-700"}>{f}</span>
+                      </li>
+                    ))}
+                    {plan.missing?.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm opacity-40">
+                        <span className={`mt-0.5 w-3.5 shrink-0 text-center ${plan.highlight ? "text-white/40" : "text-slate-400"}`}>–</span>
+                        <span className={plan.highlight ? "text-white/40" : "text-slate-400"}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={plan.href}
+                    className={`block text-center py-3 px-5 rounded-lg font-bold text-sm transition-colors ${
+                      plan.highlight
+                        ? "bg-gold-500 hover:bg-gold-600 text-navy-900"
+                        : "bg-slate-900 hover:bg-slate-800 text-white"
+                    }`}
+                  >
+                    {plan.cta}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-slate-400 mt-8">
+            All plans include fiduciary guardrails, pgvector RAG retrieval, and Anthropic Claude generation.
+          </p>
         </div>
       </section>
 

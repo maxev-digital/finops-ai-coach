@@ -79,12 +79,12 @@ export default function OnboardingPage() {
     };
 
     await Promise.all([
-      fetch(`${BASE}/profile/${userId}`, {
+      fetch(`${BASE}/profile/users/${userId}/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profilePayload),
       }),
-      fetch(`${BASE}/profile/${userId}/benefits`, {
+      fetch(`${BASE}/profile/users/${userId}/benefits`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(benefitsPayload),

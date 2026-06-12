@@ -122,6 +122,8 @@ export interface EvalResponse {
 export const api = {
   getUsers: () => request<User[]>("/profile/users"),
 
+  getUser: (userId: string) => request<User>(`/profile/users/${userId}`),
+
   chat: (userId: string, message: string, conversationId?: string, version = "v2") =>
     request<ChatResponse>("/chat", {
       method: "POST",
