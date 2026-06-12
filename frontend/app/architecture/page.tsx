@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  Brain, Database, Cpu, Globe, ArrowRight, Github, ExternalLink,
-  Layers, Zap, Shield, Server, Lock, CheckCircle, GitBranch,
+  Brain, Cpu, Globe, ArrowRight, Github, ExternalLink,
+  Layers, Shield, Server, Lock, CheckCircle, GitBranch,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -479,7 +479,7 @@ export default function ArchitecturePage() {
                 desc: "Total comp optimization, equity comp, 401k matching strategies, benefits enrollment.",
               },
             ].map(({ label, status, statusColor, statusBg, statusBorder, color, bg, border, desc }) => (
-              <div key={label} style={{ background: bg, border: `2px solid ${border}`, borderRadius: 12, padding: "16px 14px", position: "relative", opacity: status === "LOCKED" ? 0.7 : 1 }}>
+              <div key={label} style={{ background: bg, border: `2px solid ${border}`, borderLeft: `4px solid ${color}`, borderRadius: 12, padding: "16px 14px", position: "relative", opacity: status === "LOCKED" ? 0.7 : 1 }}>
                 {status === "LOCKED" && (
                   <div style={{ position: "absolute", top: 10, right: 10 }}>
                     <Lock size={12} style={{ color: "#94a3b8" }} />
