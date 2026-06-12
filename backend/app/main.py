@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.routers import chat, profile, evaluate
+from app.routers import chat, profile, evaluate, wellness
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(profile.router)
 app.include_router(evaluate.router)
+app.include_router(wellness.router)
 
 
 @app.get("/health", tags=["system"])
@@ -44,5 +45,9 @@ async def health() -> dict:
     return {
         "status": "ok",
         "env": settings.app_env,
-        "model": settings.llm_model,
+        "models": {
+            "classifier": settings.llm_model_classifier,
+            "generator": settings.llm_model_generator,
+            "evaluator": settings.llm_model_evaluator,
+        },
     }

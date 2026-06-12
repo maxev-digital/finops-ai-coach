@@ -80,6 +80,22 @@ export interface ChatResponse {
   conversation_id: string;
   sources: Source[];
   disclaimer: string;
+  domain?: string;   // CFP domain classified by Haiku (e.g. "retirement_savings")
+}
+
+export interface WellnessDimension {
+  name: string;
+  score: number;
+  label: string;
+  detail: string;
+  weight: number;
+}
+
+export interface WellnessScore {
+  user_id: string;
+  overall: number;
+  overall_label: string;
+  dimensions: WellnessDimension[];
 }
 
 export interface PromptScore {
@@ -122,4 +138,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ user_id: userId, query }),
     }),
+
+  getWellnessScore: (userId: string) =>
+    request<WellnessScore>(`/wellness/${userId}`),
 };

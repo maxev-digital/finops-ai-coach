@@ -31,7 +31,8 @@ async def run_evaluation(
         v1_response=v1_result["response"],
         v2_response=v2_result["response"],
     )
-    scores = await llm.generate_json(SYSTEM_JUDGE, judge_message, max_tokens=600)
+    # Opus judges Sonnet — cross-model eval has genuine independence
+    scores = await llm.evaluate(SYSTEM_JUDGE, judge_message, max_tokens=600)
 
     def _score(d: dict) -> PromptScore:
         return PromptScore(

@@ -1,3 +1,16 @@
+"""
+LLM service — thin wrappers around the Anthropic SDK.
+
+Three model tiers (see config.py for pinned IDs):
+  CLASSIFIER  claude-haiku   domain routing, sub-100ms
+  GENERATOR   claude-sonnet  hot path, streaming responses
+  EVALUATOR   claude-opus    async cross-model quality judge
+
+The _extract_text() guard is non-negotiable: Anthropic response.content is a
+union of TextBlock | ToolUseBlock | ThinkingBlock | RedactedThinkingBlock.
+Blindly accessing content[0].text crashes on non-text blocks — mypy catches this
+as a real type error.
+"""
 import json
 import anthropic
 from anthropic.types import TextBlock
@@ -7,21 +20,20 @@ _client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
 
 def _extract_text(response: anthropic.types.Message) -> str:
-    """Return the text from the first TextBlock in a response.
-
-    The Anthropic SDK response.content is a union of TextBlock, ToolUseBlock,
-    ThinkingBlock, and RedactedThinkingBlock. Only TextBlock has .text — mypy
-    correctly rejects a blind content[0].text access. We filter explicitly.
-    """
     for block in response.content:
         if isinstance(block, TextBlock):
             return block.text
-    raise ValueError(f"No TextBlock in Anthropic response (got: {[type(b).__name__ for b in response.content]})")
+    raise ValueError(
+        f"No TextBlock in Anthropic response (got: {[type(b).__name__ for b in response.content]})"
+    )
 
+
+# ── Generator (Sonnet — hot path) ────────────────────────────────────────────
 
 async def generate(system_prompt: str, user_message: str, max_tokens: int = 1024) -> str:
+    """RAG generation on the hot path — uses claude-sonnet (generator tier)."""
     response = _client.messages.create(
-        model=settings.llm_model,
+        model=settings.llm_model_generator,
         max_tokens=max_tokens,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
@@ -30,9 +42,30 @@ async def generate(system_prompt: str, user_message: str, max_tokens: int = 1024
 
 
 async def generate_json(system_prompt: str, user_message: str, max_tokens: int = 1024) -> dict:
-    """Prefill assistant turn with '{' to coerce JSON output reliably."""
+    """Prefill assistant turn with '{' to coerce JSON output reliably (Sonnet)."""
     response = _client.messages.create(
-        model=settings.llm_model,
+        model=settings.llm_model_generator,
+        max_tokens=max_tokens,
+        system=system_prompt,
+        messages=[
+            {"role": "user", "content": user_message},
+            {"role": "assistant", "content": "{"},
+        ],
+    )
+    return json.loads("{" + _extract_text(response))
+
+
+# ── Evaluator (Opus — async judge) ───────────────────────────────────────────
+
+async def evaluate(system_prompt: str, user_message: str, max_tokens: int = 1024) -> dict:
+    """Cross-model quality evaluation — uses claude-opus (evaluator tier).
+
+    Runs async AFTER the generator response is already delivered to the user.
+    Opus evaluating Sonnet has genuine independence: same-model eval shares
+    blindspots, cross-model eval does not.
+    """
+    response = _client.messages.create(
+        model=settings.llm_model_evaluator,
         max_tokens=max_tokens,
         system=system_prompt,
         messages=[

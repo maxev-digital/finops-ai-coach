@@ -101,6 +101,23 @@ class ChatResponse(BaseModel):
     disclaimer: str = FIDUCIARY_DISCLAIMER
 
 
+# ── Wellness Score ────────────────────────────────────────────────────────────
+
+class WellnessDimension(BaseModel):
+    name: str
+    score: int
+    label: str
+    detail: str
+    weight: float
+
+
+class WellnessScore(BaseModel):
+    user_id: UUID
+    overall: int
+    overall_label: str
+    dimensions: list[WellnessDimension]
+
+
 # ── Evaluation ───────────────────────────────────────────────────────────────
 
 class EvalRequest(BaseModel):
