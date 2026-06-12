@@ -299,6 +299,21 @@ DATABASE_URL=postgresql+asyncpg://finops_coach:finops_coach_secure_2026@localhos
 
 ---
 
+## V2 Reference — Active Portfolio Trader
+
+Full spec at `docs/PORTFOLIO_TRADER_V2.md`. Summary:
+
+- **Tier positioning:** Pro upgrade on top of V1 base subscription (+$15-20/month)
+- **Core loop:** User adds holdings → RSS + market data ingested continuously → Haiku extracts tickers + scores materiality → Sonnet generates holding-specific alert suggestion → Opus validates async before delivery
+- **New pages:** `/market` (holdings-filtered news dashboard + market snapshot) + `/alerts` (alert inbox)
+- **New tables:** `user_holdings`, `news_items`, `alerts`
+- **All V1 infrastructure unchanged** — news articles ingest into the same `document_chunks` table with `type: "news"` metadata, same 3-tier routing, same pgvector
+- **Notification delivery:** In-app → email (Resend) → web push → SMS (Twilio, high-materiality only)
+- **Guardrail:** "Research context, not advice" framing — ends every alert with disclaimer. Stays outside RIA registration requirements.
+- **Start Phase 4 after Phase 3 (V1 launch) is complete.**
+
+---
+
 ## Git Branch State
 
 ```
