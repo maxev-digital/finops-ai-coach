@@ -107,14 +107,14 @@ const SOLUTIONS = [
 ];
 
 const STACK = [
-  { label: "FastAPI + Python 3.12", cat: "Backend" },
+  { label: "FastAPI + Python 3.11", cat: "Backend" },
   { label: "PostgreSQL + pgvector 0.8.2", cat: "Vector DB" },
-  { label: "Anthropic Claude", cat: "Generation" },
-  { label: "OpenAI Embeddings", cat: "Embeddings" },
-  { label: "Async SQLAlchemy", cat: "ORM" },
+  { label: "Haiku — domain classifier", cat: "AI: Classify" },
+  { label: "Sonnet — RAG generation", cat: "AI: Generate" },
+  { label: "Opus — async eval judge", cat: "AI: Evaluate" },
+  { label: "OpenAI text-embedding-3-small", cat: "Embeddings" },
   { label: "Redis Embedding Cache", cat: "Cache" },
-  { label: "Next.js 15 App Router", cat: "Frontend" },
-  { label: "Docker + PM2", cat: "Infra" },
+  { label: "Next.js 15 + PM2 + Docker", cat: "Frontend / Infra" },
 ];
 
 const TESTIMONIALS = [
@@ -200,7 +200,7 @@ export default function HomePage() {
 
             {/* Trust chips */}
             <div className="flex flex-wrap gap-x-6 gap-y-2 pt-6 border-t border-white/10">
-              {["Async FastAPI", "pgvector RAG", "Claude-as-judge eval", "Fiduciary guardrails"].map((tag) => (
+              {["3-tier model routing", "82-doc · 1,133 chunks", "pgvector RAG", "Fiduciary guardrails"].map((tag) => (
                 <div key={tag} className="flex items-center gap-1.5 text-xs text-white/60">
                   <CheckCircle size={11} className="text-gold-400" />
                   {tag}
@@ -387,9 +387,9 @@ export default function HomePage() {
               },
               {
                 step: "02", icon: Database, color: "bg-purple-50 border-purple-300 text-purple-700",
-                title: "RAG retrieves + personalizes",
-                desc: "pgvector finds the most relevant financial wellness documents. Structured user context — goals, benefits, profile — is injected into every prompt.",
-                example: "Retirement docs + HSA policy + employee profile → Claude",
+                title: "Classify → retrieve → personalize",
+                desc: "Haiku classifies the domain (tax, retirement, estate…) in under 100ms for targeted retrieval. pgvector finds the most relevant chunks across 1,133 indexed passages. User profile is injected into every system prompt.",
+                example: "Haiku: 'retirement_savings' → pgvector top-5 → profile context → Sonnet",
               },
               {
                 step: "03", icon: ShieldCheck, color: "bg-wellness-50 border-wellness-500 text-wellness-700",
@@ -738,15 +738,19 @@ export default function HomePage() {
           {/* Architecture flow */}
           <div className="flex flex-wrap justify-center items-center gap-2 mb-10 text-xs">
             {[
-              { label: "Employee", color: "bg-navy-800 border-gold-500/40 text-white" },
+              { label: "User", color: "bg-navy-800 border-gold-500/40 text-white" },
               null,
               { label: "Next.js", color: "bg-slate-700 border-slate-600 text-white" },
               null,
               { label: "FastAPI", color: "bg-slate-700 border-slate-600 text-white" },
               null,
+              { label: "Haiku", color: "bg-cyan-900 border-cyan-700 text-cyan-300" },
+              null,
               { label: "pgvector", color: "bg-purple-900 border-purple-700 text-white" },
               null,
-              { label: "Claude", color: "bg-brand-900 border-brand-700 text-gold-300" },
+              { label: "Sonnet", color: "bg-brand-900 border-brand-700 text-gold-300" },
+              null,
+              { label: "Opus (async)", color: "bg-orange-900 border-orange-700 text-orange-300" },
             ].map((node, i) =>
               node === null ? (
                 <ArrowRight key={i} size={14} className="text-gold-500/50 shrink-0" />
